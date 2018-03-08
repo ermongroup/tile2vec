@@ -36,7 +36,7 @@ class ResidualBlock(nn.Module):
 
 
 class TileNet(nn.Module):
-    def __init__(self, block, num_blocks, in_channels=4, z_dim=512):
+    def __init__(self, num_blocks, in_channels=4, z_dim=512):
         super(TileNet, self).__init__()
         self.in_channels = in_channels
         self.z_dim = z_dim
@@ -45,18 +45,18 @@ class TileNet(nn.Module):
         self.conv1 = nn.Conv2d(self.in_channels, 64, kernel_size=3, stride=1,
             padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
-        self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
-        self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
-        self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
-        self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
-        self.layer5 = self._make_layer(block, self.z_dim, num_blocks[4],
+        self.layer1 = self._make_layer(64, num_blocks[0], stride=1)
+        self.layer2 = self._make_layer(128, num_blocks[1], stride=2)
+        self.layer3 = self._make_layer(256, num_blocks[2], stride=2)
+        self.layer4 = self._make_layer(512, num_blocks[3], stride=2)
+        self.layer5 = self._make_layer(self.z_dim, num_blocks[4],
             stride=2)
 
-    def _make_layer(self, block, planes, num_blocks, stride, no_relu=False):
+    def _make_layer(self, planes, num_blocks, stride, no_relu=False):
         strides = [stride] + [1]*(num_blocks-1)
         layers = []
         for stride in strides:
-            layers.append(block(self.in_planes, planes, stride=stride))
+            layers.append(ResidualBlock(self.in_planes, planes, stride=stride))
             self.in_planes = planes
         return nn.Sequential(*layers)
 
@@ -101,7 +101,6 @@ def make_tilenet(in_channels=4, z_dim=512):
     Returns a TileNet for unsupervised Tile2Vec with the specified number of
     input channels and feature dimension.
     """
-    block = ResidualBlock
     num_blocks = [2, 2, 2, 2, 2]
-    return TileNet(block, num_blocks, in_channels=in_channels, z_dim=z_dim)
+    return TileNet(num_blocks, in_channels=in_channels, z_dim=z_dim)
 
