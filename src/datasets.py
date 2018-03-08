@@ -127,7 +127,7 @@ def triplet_dataloader(img_type, tile_dir, bands=4, augment=True,
     if augment: transform_list.append(RandomFlipAndRotate())
     transform_list.append(ToFloatTensor())
     transform = transforms.Compose(transform_list)
-    dataset = PatchTripletsDataset(tile_dir, transform=transform,
+    dataset = TileTripletsDataset(tile_dir, transform=transform,
         n_triplets=n_triplets, pairs_only=pairs_only)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle,
         num_workers=num_workers)
