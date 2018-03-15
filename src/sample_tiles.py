@@ -44,7 +44,10 @@ def get_triplet_tiles(tile_dir, img_dir, img_triplets, tile_size=50, neighborhoo
 
 	for img_name in unique_imgs:
 		print("Sampling image {}".format(img_name))
-		img = load_img(os.path.join(img_dir, img_name), val_type=val_type, 
+        if img_name[-3:] == 'npy':
+            img = np.load(img_name)
+        else:
+            img = load_img(os.path.join(img_dir, img_name), val_type=val_type, 
 					   bands_only=bands_only)
 		img_padded = np.pad(img, pad_width=[(tile_radius, tile_radius),
                                             (tile_radius, tile_radius), (0,0)],

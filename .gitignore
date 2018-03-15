@@ -2,10 +2,10 @@
 data/triplets
 data/triplets.zip
 data/tiles
-data/large_naip
 
 # Models
 *.ckpt
 
 # Random files
 *.pyc
+*nfs*
