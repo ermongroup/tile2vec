@@ -3,58 +3,58 @@ import gdal
 import os
 
 def load_img(img_file, val_type='uint8', bands_only=False, num_bands=4):
-	"""
-	Loads an image using gdal, returns it as an array.
-	"""
-	obj = gdal.Open(img_file)
-	if val_type == 'uint8':
-		img = obj.ReadAsArray().astype(np.uint8)
-	elif val_type == 'float32':
-		img = obj.ReadAsArray().astype(np.float32)
-	else:
-		raise ValueError('Invalid val_type for image values. Try uint8 or float32.')
+    """
+    Loads an image using gdal, returns it as an array.
+    """
+    obj = gdal.Open(img_file)
+    if val_type == 'uint8':
+        img = obj.ReadAsArray().astype(np.uint8)
+    elif val_type == 'float32':
+        img = obj.ReadAsArray().astype(np.float32)
+    else:
+        raise ValueError('Invalid val_type for image values. Try uint8 or float32.')
     img = np.moveaxis(img, 0, -1)
-	if bands_only: img = img[:,:,:num_bands]
-	return img
+    if bands_only: img = img[:,:,:num_bands]
+    return img
 
 def get_triplet_imgs(img_dir, img_ext='.tif', n_triplets=1000):
-	"""
-	Returns a numpy array of dimension (n_triplets, 2). First column is
-	the img name of anchor/neighbor tiles and second column is img name 
-	of distant tiles.
-	"""
-	img_names = []
-	for filename in os.listdir(img_dir):
-		if filename.endswith(img_ext):
-			img_names.append(filename)
-	img_triplets = list(map(lambda _: random.choice(img_names), range(2 * n_triplets)))
-	img_triplets = np.array(img_triplets)
-	return img_triplets.reshape((-1, 2))
+    """
+    Returns a numpy array of dimension (n_triplets, 2). First column is
+    the img name of anchor/neighbor tiles and second column is img name 
+    of distant tiles.
+    """
+    img_names = []
+    for filename in os.listdir(img_dir):
+        if filename.endswith(img_ext):
+            img_names.append(filename)
+    img_triplets = list(map(lambda _: random.choice(img_names), range(2 * n_triplets)))
+    img_triplets = np.array(img_triplets)
+    return img_triplets.reshape((-1, 2))
 
 def get_triplet_tiles(tile_dir, img_dir, img_triplets, tile_size=50, neighborhood=100, 
-					  val_type='uint8', bands_only=False, save=True, verbose=False):
-	if not os.path.exists(tile_dir):
-		os.makedirs(tile_dir)
-	size_even = (tile_size % 2 == 0)
-	tile_radius = tile_size // 2
+                      val_type='uint8', bands_only=False, save=True, verbose=False):
+    if not os.path.exists(tile_dir):
+        os.makedirs(tile_dir)
+    size_even = (tile_size % 2 == 0)
+    tile_radius = tile_size // 2
 
-	n_triplets = img_triplets.shape[0]
-	unique_imgs = np.unique(img_triplets)
-	tiles = np.zeros((n_triplets, 3, 2), dtype=np.int16)
+    n_triplets = img_triplets.shape[0]
+    unique_imgs = np.unique(img_triplets)
+    tiles = np.zeros((n_triplets, 3, 2), dtype=np.int16)
 
-	for img_name in unique_imgs:
-		print("Sampling image {}".format(img_name))
+    for img_name in unique_imgs:
+        print("Sampling image {}".format(img_name))
         if img_name[-3:] == 'npy':
             img = np.load(img_name)
         else:
             img = load_img(os.path.join(img_dir, img_name), val_type=val_type, 
-					   bands_only=bands_only)
-		img_padded = np.pad(img, pad_width=[(tile_radius, tile_radius),
+                       bands_only=bands_only)
+        img_padded = np.pad(img, pad_width=[(tile_radius, tile_radius),
                                             (tile_radius, tile_radius), (0,0)],
                             mode='reflect')
-		img_shape = img_padded.shape
+        img_shape = img_padded.shape
 
-		for idx, row in enumerate(img_triplets):
+        for idx, row in enumerate(img_triplets):
             if row[0] == img_name:
                 xa, ya = sample_anchor(img_shape, tile_radius)
                 xn, yn = sample_neighbor(img_shape, xa, ya, neighborhood, tile_radius)
@@ -69,7 +69,7 @@ def get_triplet_tiles(tile_dir, img_dir, img_triplets, tile_size=50, neighborhoo
                     if size_even:
                         tile_anchor = tile_anchor[:-1,:-1]
                         tile_neighbor = tile_neighbor[:-1,:-1]
-                    np.save(os.path.join(tile_dir, '{}tile.npy'.format(idx)), tile_anchor)
+                    np.save(os.path.join(tile_dir, '{}anchor.npy'.format(idx)), tile_anchor)
                     np.save(os.path.join(tile_dir, '{}neighbor.npy'.format(idx)), tile_neighbor)
                 
                 tiles[idx,0,:] = xa - tile_radius, ya - tile_radius
