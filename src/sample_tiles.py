@@ -13,6 +13,7 @@ def load_img(img_file, val_type='uint8', bands_only=False, num_bands=4):
 		img = obj.ReadAsArray().astype(np.float32)
 	else:
 		raise ValueError('Invalid val_type for image values. Try uint8 or float32.')
+    img = np.moveaxis(img, 0, -1)
 	if bands_only: img = img[:,:,:num_bands]
 	return img
 
