@@ -1,6 +1,7 @@
 import numpy as np
 import gdal
 import os
+import random
 
 def load_img(img_file, val_type='uint8', bands_only=False, num_bands=4):
     """
