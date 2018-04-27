@@ -9,3 +9,5 @@ data/tiles
 # Random files
 *.pyc
 *nfs*
+*DS*
+examples/.ipynb_checkpoints*
