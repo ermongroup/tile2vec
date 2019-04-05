@@ -1,8 +1,7 @@
 # Data
-data/triplets
-data/triplets.zip
-data/tiles
+data/*
 *.tif
+scripts/
 
 # Models
 *.ckpt
